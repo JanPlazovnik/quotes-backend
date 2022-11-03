@@ -13,6 +13,7 @@ class UserController extends Controller
 
     public function me()
     {
+        // Returns the authenticated user
         return response()->json([
             'status' => 'success',
             'data' => auth()->user()

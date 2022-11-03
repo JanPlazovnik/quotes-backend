@@ -30,9 +30,13 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Select only the email and password fields, in case user tries to send other fields
         $credentials = $request->only('email', 'password');
 
+        // Attempt to authenticate the user
         $token = Auth::attempt($credentials);
+
+        // If authentication fails, return error
         if (!$token) {
             return response()->json([
                 'status' => 'error',
@@ -80,6 +84,7 @@ class AuthController extends Controller
 
     public function logout()
     {
+        // Invalidate the token and unset the user
         Auth::logout();
         return response()->json([
             'status' => 'success',
@@ -89,6 +94,7 @@ class AuthController extends Controller
 
     public function refresh()
     {
+        // Refreshes the token, which invalidates the current token
         return response()->json([
             'status' => 'success',
             'data' => [
