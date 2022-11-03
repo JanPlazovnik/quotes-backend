@@ -6,21 +6,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'signup']]);
     }
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'data' => $validator->errors(),
+            ], 422);
+        }
+
         $credentials = $request->only('email', 'password');
 
         $token = Auth::attempt($credentials);
@@ -31,25 +40,29 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = Auth::user();
         return response()->json([
             'status' => 'success',
-            'user' => $user,
             'data' => [
-                'token' => $token,
-                'type' => 'bearer',
+                'token' => $token
             ]
         ]);
     }
 
-    public function register(Request $request)
+    public function signup(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'data' => $validator->errors(),
+            ], 422);
+        }
 
         $user = User::create([
             'first_name' => $request->first_name,
@@ -80,7 +93,6 @@ class AuthController extends Controller
             'status' => 'success',
             'data' => [
                 'token' => Auth::refresh(),
-                'type' => 'bearer',
             ]
         ]);
     }
