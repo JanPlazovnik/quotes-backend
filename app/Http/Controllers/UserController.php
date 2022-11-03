@@ -10,4 +10,12 @@ class UserController extends Controller
     {
         $this->middleware('auth:api');
     }
+
+    public function me()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => auth()->user()
+        ]);
+    }
 }
