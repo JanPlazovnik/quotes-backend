@@ -38,6 +38,8 @@ Route::controller(QuoteController::class)
         Route::get('/random', 'getRandomQuote');
         Route::get('/{id}', 'getQuote');
         Route::put('/{id}', 'editQuote');
+        Route::delete('/{id}', 'deleteQuote');
+        Route::post('/{id}/{type}', 'voteQuote');
     });
 
 // Catch-all route for 404

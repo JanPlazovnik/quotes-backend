@@ -15,6 +15,19 @@ class QuoteController extends Controller
     }
 
     /**
+     * Get the validator for quote requests
+     * 
+     * @param Request $request
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    private function getQuoteValidator(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'content' => 'required|string|max:255',
+        ]);
+    }
+
+    /**
      * Get a quote by id
      * 
      * @param int $id
@@ -180,15 +193,66 @@ class QuoteController extends Controller
     }
 
     /**
-     * Get the validator for quote requests
+     * Vote for a quote
      * 
      * @param Request $request
-     * @return \Illuminate\Contracts\Validation\Validator
+     * @param int $id
+     * @param string $vote
+     * @return \Illuminate\Http\JsonResponse
      */
-    private function getQuoteValidator(Request $request)
+    public function voteQuote(Request $request, $id, $type)
     {
-        return Validator::make($request->all(), [
-            'content' => 'required|string|max:255',
-        ]);
+        // Check if vote type is valid
+        if (!in_array($type, ['upvote', 'downvote'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid vote type',
+            ], 422);
+        }
+
+        $numericVote = $type === 'upvote' ? 1 : -1;
+
+        // Fetch the quote
+        $quote = Quote::find($id);
+
+        // Check if quote exists
+        if (!$quote) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Quote not found',
+            ], 404);
+        }
+
+        // Check if user is the author
+        if ($quote->user_id === auth()->user()->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You cannot vote for your own quote',
+            ], 401);
+        }
+
+        // Fetch the vote if it exists
+        $userVote = $quote->votes()->where('user_id', auth()->user()->id)->first();
+
+        // User has not voted before so we create a new vote
+        if (!$userVote) {
+            $userVote = $quote->votes()->create([
+                'user_id' => auth()->user()->id,
+                'type' => $numericVote,
+            ]);
+        }
+
+        // User has voted before and the vote type is the same so we delete the vote
+        elseif ($userVote && $userVote->type === $numericVote) {
+            $userVote->delete();
+        }
+
+        // User has voted before and the vote type is different so we update the vote
+        elseif ($userVote && $userVote->type !== $numericVote) {
+            $userVote->type = $numericVote;
+            $userVote->save();
+        }
+
+        return response()->json([], 204);
     }
 }
