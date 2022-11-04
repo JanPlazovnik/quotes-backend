@@ -11,9 +11,15 @@ class QuoteController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['getQuote', 'getAllQuotes']]);
+        $this->middleware('auth:api', ['except' => ['getQuote', 'getAllQuotes', 'getRandomQuote']]);
     }
 
+    /**
+     * Get a quote by id
+     * 
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getQuote($id)
     {
         // TODO: Fetch vote count
@@ -32,7 +38,12 @@ class QuoteController extends Controller
         ]);
     }
 
-
+    /**
+     * Get all quotes paginated
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllQuotes(Request $request)
     {
         $page = $request->input('page', 1);
@@ -47,6 +58,11 @@ class QuoteController extends Controller
         ]);
     }
 
+    /**
+     * Get a random quote
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getRandomQuote()
     {
         $quote = Quote::inRandomOrder()->first();
@@ -57,7 +73,12 @@ class QuoteController extends Controller
         ]);
     }
 
-    // Post a quote
+    /**
+     * Create a new quote
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function postQuote(Request $request)
     {
         $validator = $this->getQuoteValidator($request);
@@ -77,7 +98,13 @@ class QuoteController extends Controller
         ]);
     }
 
-    // Edit quote
+    /**
+     * Update a quote
+     * 
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function editQuote(Request $request, $id)
     {
         $validator = $this->getQuoteValidator($request);
@@ -117,7 +144,12 @@ class QuoteController extends Controller
         ]);
     }
 
-    // Delete quote
+    /**
+     * Delete a quote
+     * 
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function deleteQuote(Request $request, $id)
     {
         // Fetch the quote
@@ -147,6 +179,12 @@ class QuoteController extends Controller
         ]);
     }
 
+    /**
+     * Get the validator for quote requests
+     * 
+     * @param Request $request
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
     private function getQuoteValidator(Request $request)
     {
         return Validator::make($request->all(), [

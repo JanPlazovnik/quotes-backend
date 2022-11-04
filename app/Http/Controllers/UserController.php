@@ -14,7 +14,12 @@ class UserController extends Controller
         $this->middleware('auth:api');
     }
 
-    // Returns the authenticated user
+    /**
+     * Get the authenticated user
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function me()
     {
         return response()->json([
@@ -23,7 +28,12 @@ class UserController extends Controller
         ]);
     }
 
-    // Update own password
+    /**
+     * Update the authenticated user's password
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updatePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [

@@ -16,6 +16,12 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'signup']]);
     }
 
+    /**
+     * Authenticate a user and return the token
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -52,6 +58,12 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Create a new user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function signup(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -82,9 +94,14 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Invalidates the token and logs the user out
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout()
     {
-        // Invalidate the token and unset the user
         Auth::logout();
         return response()->json([
             'status' => 'success',
@@ -92,9 +109,14 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Refreshes the token, which invalidates the current token
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function refresh()
     {
-        // Refreshes the token, which invalidates the current token
         return response()->json([
             'status' => 'success',
             'data' => [
