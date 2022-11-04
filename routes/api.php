@@ -27,8 +27,6 @@ Route::controller(UserController::class)
     ->prefix('me')
     ->group(function () {
         Route::get('/', 'me');
-        Route::post('/myquote', 'postQuote');
-        Route::put('/myquote/{id}', 'editQuote');
         Route::put('/update-password', 'updatePassword');
     });
 
@@ -36,8 +34,10 @@ Route::controller(QuoteController::class)
     ->prefix('quotes')
     ->group(function () {
         Route::get('/', 'getAllQuotes');
+        Route::post('/', 'postQuote');
         Route::get('/random', 'getRandomQuote');
         Route::get('/{id}', 'getQuote');
+        Route::put('/{id}', 'editQuote');
     });
 
 // Catch-all route for 404
