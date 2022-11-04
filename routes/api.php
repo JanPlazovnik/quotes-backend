@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuoteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +30,13 @@ Route::controller(UserController::class)
         Route::post('/myquote', 'postQuote');
         Route::put('/myquote/{id}', 'editQuote');
         Route::put('/update-password', 'updatePassword');
+    });
+
+Route::controller(QuoteController::class)
+    ->prefix('quotes')
+    ->group(function () {
+        Route::get('/', 'getAllQuotes');
+        Route::get('/{id}', 'getQuote');
     });
 
 // Catch-all route for 404
