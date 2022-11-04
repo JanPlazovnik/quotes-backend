@@ -28,6 +28,7 @@ Route::controller(UserController::class)
         Route::get('/', 'me');
         Route::post('/myquote', 'postQuote');
         Route::put('/myquote/{id}', 'editQuote');
+        Route::put('/update-password', 'updatePassword');
     });
 
 // Catch-all route for 404
