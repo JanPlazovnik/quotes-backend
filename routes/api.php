@@ -36,6 +36,7 @@ Route::controller(QuoteController::class)
     ->prefix('quotes')
     ->group(function () {
         Route::get('/', 'getAllQuotes');
+        Route::get('/random', 'getRandomQuote');
         Route::get('/{id}', 'getQuote');
     });
 

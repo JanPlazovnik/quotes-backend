@@ -44,4 +44,14 @@ class QuoteController extends Controller
             'data' => $quotes
         ]);
     }
+
+    public function getRandomQuote()
+    {
+        $quote = Quote::inRandomOrder()->first();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $quote,
+        ]);
+    }
 }
