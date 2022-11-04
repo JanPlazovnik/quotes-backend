@@ -6,6 +6,7 @@ use App\Models\Quote;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class QuoteController extends Controller
 {
@@ -35,8 +36,18 @@ class QuoteController extends Controller
      */
     public function getQuote($id)
     {
-        // TODO: Fetch vote count
-        $quote = Quote::with('user')->find($id);
+        $quote = Quote::with('user')
+            ->when(auth()->user(), function ($query) {
+                return $query->select('*', DB::raw('(SELECT type as user_vote FROM votes WHERE votes.quote_id = quotes.id AND votes.user_id = ' . auth()->user()->id . ')'));
+            })
+            ->withCount(['votes as upvotes' => function ($query) {
+                $query->where('type', 1);
+            }])
+            ->withCount(['votes as downvotes' => function ($query) {
+                $query->where('type', -1);
+            }])
+            ->withSum('votes as score', 'type')
+            ->find($id);
 
         if (!$quote) {
             return response()->json([
@@ -62,12 +73,24 @@ class QuoteController extends Controller
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 10);
 
-        // TODO: Order by likes descending
-        $quotes = Quote::with('user')->simplePaginate($limit, ['*'], 'page', $page);
+        // Get all quotes with user and vote data and if the user has voted
+        $quotes = Quote::with('user')
+            ->when(auth()->user(), function ($query) {
+                return $query->select('*', DB::raw('(SELECT type as user_vote FROM votes WHERE votes.quote_id = quotes.id AND votes.user_id = ' . auth()->user()->id . ')'));
+            })
+            ->withCount(['votes as upvotes' => function ($query) {
+                $query->where('type', 1);
+            }])
+            ->withCount(['votes as downvotes' => function ($query) {
+                $query->where('type', -1);
+            }])
+            ->withSum('votes as score', 'type')
+            ->orderByRaw('score DESC NULLS LAST');
+        $paginatedQuotes = $quotes->simplePaginate($limit, ['*'], 'page', $page);
 
         return response()->json([
             'status' => 'success',
-            'data' => $quotes
+            'data' => $paginatedQuotes
         ]);
     }
 
