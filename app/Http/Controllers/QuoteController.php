@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Quote;
 use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 
 class QuoteController extends Controller
 {
@@ -38,7 +38,12 @@ class QuoteController extends Controller
     {
         $quote = Quote::with('user')
             ->when(auth()->user(), function ($query) {
-                return $query->select('*', DB::raw('(SELECT type as user_vote FROM votes WHERE votes.quote_id = quotes.id AND votes.user_id = ' . auth()->user()->id . ')'));
+                return $query->addSelect([
+                    'user_vote' => Vote::select('type')
+                        ->whereColumn('quote_id', 'quotes.id')
+                        ->where('user_id', auth()->user()->id)
+                        ->limit(1)
+                ]);
             })
             ->withCount(['votes as upvotes' => function ($query) {
                 $query->where('type', 1);
@@ -70,13 +75,19 @@ class QuoteController extends Controller
      */
     public function getAllQuotes(Request $request)
     {
+        // Get the pagination details from the request
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 10);
 
-        // Get all quotes with user and vote data and if the user has voted
+        // Get all quotes with user and vote data
         $quotes = Quote::with('user')
             ->when(auth()->user(), function ($query) {
-                return $query->select('*', DB::raw('(SELECT type as user_vote FROM votes WHERE votes.quote_id = quotes.id AND votes.user_id = ' . auth()->user()->id . ')'));
+                return $query->addSelect([
+                    'user_vote' => Vote::select('type')
+                        ->whereColumn('quote_id', 'quotes.id')
+                        ->where('user_id', auth()->user()->id)
+                        ->limit(1)
+                ]);
             })
             ->withCount(['votes as upvotes' => function ($query) {
                 $query->where('type', 1);
