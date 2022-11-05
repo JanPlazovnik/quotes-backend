@@ -112,7 +112,24 @@ class QuoteController extends Controller
      */
     public function getRandomQuote()
     {
-        $quote = Quote::inRandomOrder()->first();
+        $quote = Quote
+            ::inRandomOrder()
+            ->when(auth()->user(), function ($query) {
+                return $query->addSelect([
+                    'user_vote' => Vote::select('type')
+                        ->whereColumn('quote_id', 'quotes.id')
+                        ->where('user_id', auth()->user()->id)
+                        ->limit(1)
+                ]);
+            })
+            ->withCount(['votes as upvotes' => function ($query) {
+                $query->where('type', 1);
+            }])
+            ->withCount(['votes as downvotes' => function ($query) {
+                $query->where('type', -1);
+            }])
+            ->withSum('votes as score', 'type')
+            ->first();
 
         return response()->json([
             'status' => 'success',
