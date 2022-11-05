@@ -158,6 +158,7 @@ class QuoteController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
+                'message' => 'Validation failed',
                 'data' => $validator->errors(),
             ], 422);
         }
@@ -270,7 +271,7 @@ class QuoteController extends Controller
 
         // User has not voted before so we create a new vote
         if (!$userVote) {
-            $userVote = $quote->votes()->create([
+            $quote->votes()->create([
                 'user_id' => auth()->user()->id,
                 'type' => $numericVote,
             ]);
@@ -287,6 +288,9 @@ class QuoteController extends Controller
             $userVote->save();
         }
 
-        return response()->json([], 204);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Vote submitted',
+        ], 204);
     }
 }
